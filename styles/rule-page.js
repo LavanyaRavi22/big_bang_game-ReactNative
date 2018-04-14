@@ -22,7 +22,8 @@ export default StyleSheet.create({
 		color: 'black',
 		fontSize:25,
 		width:350,
-		marginTop:30
+		marginTop:30,
+		alignItems: 'center'
 	},
 
 	btn: {
@@ -30,9 +31,26 @@ export default StyleSheet.create({
 		marginTop:20
 	},
 
+	btnVertical: {
+		flexDirection: 'row',
+		marginTop:20
+	},
+
 	confused: {
 		marginTop: 30,
 		color: 'black',
 		fontSize:25
+	},
+
+	icons: {
+		width: '40%',
+	    height: '40%',
+	    resizeMode: 'contain'
+	},
+
+	ruleView: {
+		marginTop: -70,
+		flex: 1,
+		flexDirection: 'row'
 	}
 });

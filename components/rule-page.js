@@ -8,6 +8,9 @@ import {
 import rulepage from '../styles/rule-page.js';
 import Scissors from '../images/scissors.png';
 import Paper from '../images/paper.png';
+import Rock from '../images/rock.png';
+import Lizard from '../images/lizard.png';
+import Spock from '../images/spock.png';
 
 var Sound =require('react-native-sound');
 
@@ -88,50 +91,50 @@ const ruleOrder = [{
 					 { 
 						name: 'Paper covers Rock',
 						sound: 'paper_covers_rock.mp3',
-						firstImage: 'paper.png',
-						secondImage: 'rock.png'
+						firstImage: Paper,
+						secondImage: Rock
 					 },
 					 { 
 						name: 'Rock crushes Lizard',
 						sound: 'rock_crushes_lizard.mp3',
-						firstImage: 'rock.png',
-						secondImage: 'lizard.png'
+						firstImage: Rock,
+						secondImage: Lizard
 					 },
 					 { 
 						name: 'Lizard poisons Spock',
 						sound: 'lizard_poisons_spock.mp3',
-						firstImage: 'lizard.png',
-						secondImage: 'spock.png'
+						firstImage: Lizard,
+						secondImage: Spock
 					 },
 					 { 
 						name: 'Spock smashes Scissors',
-						firstImage: 'spock.png',
-						secondImage: 'scissors.png'
+						firstImage: Spock,
+						secondImage: Scissors
 					 },
 					 { 
 						name: 'Scissors decapitates Lizard',
-						firstImage: 'scissors.png',
-						secondImage: 'lizard.png'
+						firstImage: Scissors,
+						secondImage: Lizard
 					 },
 					 { 
 						name: 'Lizard eats Paper',
-						firstImage: 'lizard.png',
-						secondImage: 'paper.png'
+						firstImage: Lizard,
+						secondImage: Paper
 					 },
 					 { 
 						name: 'Paper disproves Spock',
-						firstImage: 'paper.png',
-						secondImage: 'spock.png'
+						firstImage: Paper,
+						secondImage: Spock
 					 },
 					 { 
 						name: 'Spock vaporizes rock',
-						firstImage: 'spock.png',
-						secondImage: 'rock.png'
+						firstImage: Spock,
+						secondImage: Rock
 					 },
 					 { 
 						name: 'Rock crushes Scissors',
-						firstImage: 'rock.png',
-						secondImage: 'scissors.png'
+						firstImage: Rock,
+						secondImage: Scissors
 					 }];
 
 
@@ -140,10 +143,12 @@ export default class RulePage extends Component{
 	constructor() {
 		super();
 		this.state = {
-			confused: true,
+			confused: false,
 			text: null,
 			firstImage: null,
-			secondImage: null
+			secondImage: null,
+			next_back_btn: false,
+			order: 0
 		}
 	}
 
@@ -161,34 +166,54 @@ export default class RulePage extends Component{
 		
 	}
 
-	playSlowSound = () => {
-
-			this.playRule(0);
+	showButtons = () => {
+		this.setState(previousState => {
+			return {
+				next_back_btn: true
+			}
+		});
+		this.playRuleOneByOne();
 	}
 
-	 playRule = async (i) => {
-		//console.log(data);
-		
-		if(i < ruleOrder.length)
-		{
-			var data = ruleOrder[i];
+	playRuleOneByOne = () => {
+		var data = ruleOrder[this.state.order];
 
-			await this.setState((previousState) => {
+		this.setState(previousState => {
+			return {
+				text: data.name,
+				firstImage: data.firstImage,
+				secondImage: data.secondImage
+			}
+		},() => {
+			sounds[this.state.order].setSpeed(0.7);
+			sounds[this.state.order].play();
+		});
+	}
+
+	nextRule = () => {
+		if(this.state.order < ruleOrder.length-1) {
+			this.setState(previousState => {
 				return {
-					text: data.name,
-					firstImage: data.firstImage,
-					secondImage: data.secondImage
+					order: previousState.order + 1
 				}
-			},() => {
-				sounds[i].setSpeed(0.7);
-				sounds[i].play((success) => {
-					if(success) {
-						this.playRule(++i);
-					}
-				});
-			});
-		}
-		
+			}, () => {
+				sounds[this.state.order-1].release();
+				this.playRuleOneByOne();
+			})
+		}	
+	}
+
+	previousRule = () => {
+		if(this.state.order > 0) {
+			this.setState(previousState => {
+				return {
+					order: previousState.order - 1
+				}
+			}, () => {
+				sounds[this.state.order+1].release();
+				this.playRuleOneByOne();
+			})
+		}	
 	}
 
 	render = () => {
@@ -208,23 +233,46 @@ export default class RulePage extends Component{
 				</View>
 
 				{this.state.confused &&
-					<View>
+					<View style={{alignItems: 'center'}}>
 						<Text style={rulepage.confused}>
 							Confused, are you?
 						</Text>
-						<View style={rulepage.btn}>
-							<Button title="Touch me to slow down Sheldon" 
-									color='#D40000'
-									onPress={this.playSlowSound}> 
-							</Button>
-						</View>
+						{!this.state.next_back_btn &&
+							<View style={rulepage.btn}>
+								<Button title="One by one Sheldon!" 
+										color='#D40000'
+										onPress={this.showButtons}> 
+								</Button>
+							</View>
+						}
+
+						{this.state.next_back_btn &&
+							<View style={rulepage.btnVertical}>
+								<Button title="Back" 
+										color='#D40000'
+										style={{margin: 10}}
+										onPress={this.previousRule}> 
+								</Button>
+
+								<Button title="Next" 
+										color='#D40000'
+										style={{margin: 10}}
+										onPress={this.nextRule}> 
+								</Button>
+
+							</View>
+						}
 					
 						{this.state.text && this.state.firstImage 
 							&& this.state.secondImage &&
-							<View>
-								<Text>
+							<View style={{marginTop:10, marginBottom:0,alignItems: 'center'}}>
+								<Text style={rulepage.description}>
 									{this.state.text}
 								</Text>
+								<View style={rulepage.ruleView} >
+									<Image source={this.state.firstImage} style={rulepage.icons} />
+									<Image source={this.state.secondImage} style={rulepage.icons} />
+								</View>
 							</View>
 						}
 					</View>
